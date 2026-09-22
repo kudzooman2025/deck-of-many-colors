@@ -133,22 +133,18 @@
   }
 
   .card-slot {
-    perspective: 1200px;
-    height: 420px;
-    transition: height .35s ease;
-  }
-  .card-slot:has(.card.flipped) {
-    height: min(780px, 90vh);
+    perspective: none;
+    height: auto;
   }
   .card {
     position: relative;
     width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: transform .55s cubic-bezier(.2,.8,.2,1);
+    height: auto;
+    transform-style: flat;
+    transition: none;
     cursor: pointer;
   }
-  .card.flipped { transform: rotateY(180deg); }
+  .card.flipped { transform: none; }
   .card.drawn-pulse {
     animation: pulse 1.2s ease;
   }
@@ -158,18 +154,26 @@
   }
 
   .face {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    position: relative;
+    inset: auto;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
     border-radius: var(--radius);
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--shadow);
     border: 2px solid transparent;
     display: flex;
     flex-direction: column;
+    height: auto;
+    min-height: 420px;
   }
-  .face.back { transform: rotateY(180deg); }
+  .face.back {
+    display: none;
+    transform: none;
+    min-height: 0;
+  }
+  .card.flipped .face.front { display: none; }
+  .card.flipped .face.back { display: flex; }
 
   .card[data-theme="fantasy"] .face {
     border-color: #8a7020;
@@ -216,7 +220,8 @@
 
   /* FRONT */
   .art {
-    height: 46%;
+    height: 220px;
+    flex: 0 0 auto;
     position: relative;
     overflow: hidden;
   }
@@ -294,14 +299,11 @@
 
   /* BACK */
   .back-inner {
-    padding: .85rem .9rem .75rem;
-    height: 100%;
+    padding: .85rem .9rem .9rem;
+    height: auto;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overflow: visible;
   }
   .back-head {
     display: flex;
@@ -322,7 +324,7 @@
   .paint-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .66rem;
+    font-size: .72rem;
     flex: 0 0 auto;
   }
   .paint-table th {
@@ -345,9 +347,9 @@
     font-weight: 800;
   }
   .paint-table td {
-    padding: .28rem .15rem;
+    padding: .4rem .2rem;
     border-bottom: 1px solid #1e2433;
-    vertical-align: middle;
+    vertical-align: top;
   }
   .paint-table .sw {
     display: inline-block;
@@ -464,9 +466,9 @@
   }
 
   @media (max-width: 700px) {
-    .card-slot:has(.card.flipped) { height: min(860px, 92vh); }
     .paint-table th.sec-paint,
     .paint-table td.sec-paint { display: none; }
+  }
   }
 </style>
 </head>
@@ -18854,7 +18856,7 @@ function buildCard(card) {
         <h2 class="title">${card.title}</h2>
         <p class="mood">${card.mood}</p>
         <div class="swatches">${swatches}</div>
-        <div class="flip-hint">tap to flip · paints on back</div>
+        <div class="flip-hint">tap to show paints · tap again for art</div>
       </div>
     </div>
     <div class="face back">
