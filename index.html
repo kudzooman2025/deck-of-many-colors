@@ -470,6 +470,119 @@
     .paint-table td.sec-paint { display: none; }
   }
   }
+
+  /* Detail panel: full readable paint back on mobile + desktop */
+  .detail-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 12, .72);
+    backdrop-filter: blur(6px);
+    z-index: 80;
+    display: none;
+    align-items: stretch;
+    justify-content: center;
+    padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  }
+  .detail-backdrop.open { display: flex; }
+  .detail-sheet {
+    width: min(720px, 100%);
+    max-height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #121722;
+    border: 1px solid #2a3142;
+    border-radius: 16px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.55);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+  .detail-sheet.fantasy { background: linear-gradient(160deg, #1a1520 0%, #151922 55%, #121722 100%); border-color: #8a7020; }
+  .detail-sheet.scifi { background: linear-gradient(160deg, #0a1220 0%, #151922 55%, #121722 100%); border-color: #1a8a9c; }
+  .detail-top {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .85rem 1rem;
+    background: rgba(18,23,34,.94);
+    border-bottom: 1px solid #2a3142;
+  }
+  .detail-top h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+  .detail-top .meta {
+    color: var(--muted);
+    font-size: .8rem;
+  }
+  .detail-close {
+    border: 1px solid #3b455c;
+    background: #1c2230;
+    color: var(--text);
+    border-radius: 999px;
+    padding: .45rem .85rem;
+    font: inherit;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .detail-body { padding: 1rem 1rem 1.25rem; }
+  .detail-art {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: .9rem;
+    background: #0c0e12;
+  }
+  .detail-mood {
+    color: #c5cddc;
+    margin: 0 0 1rem;
+    font-size: .95rem;
+  }
+  .detail-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    min-width: 320px;
+  }
+  .detail-table th {
+    text-align: left;
+    color: var(--muted);
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .45rem .35rem;
+    border-bottom: 1px solid #2a3142;
+  }
+  .detail-table td {
+    padding: .55rem .35rem;
+    border-bottom: 1px solid #1e2433;
+    vertical-align: top;
+  }
+  .detail-table .pro-col { background: var(--pro-bg); color: #ddd6fe; }
+  .detail-table th.pro-col { color: #c4b5fd; font-weight: 800; }
+  .detail-challenge {
+    margin-top: 1rem;
+    padding: .85rem .9rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid #2a3142;
+    font-size: .9rem;
+    line-height: 1.45;
+  }
+  @media (max-width: 700px) {
+    .detail-table th.sec-paint,
+    .detail-table td.sec-paint { display: none; }
+    .detail-art { max-height: 220px; }
+  }
+
 </style>
 </head>
 <body>
@@ -477,14 +590,14 @@
   <header>
     <div class="badge">Personal fan-made reference · Inspired by Ninjon · Not affiliated</div>
     <h1>Deck of <span class="accent">Many Colors</span></h1>
-    <p class="subtitle">A miniature painting scheme deck for Christopher — 104 cards · 52 Fantasy · 52 Sci-Fi. Click a card to flip. Draw random for your next project.</p>
+    <p class="subtitle">A miniature painting scheme deck for Christopher — 104 cards · 52 Fantasy · 52 Sci-Fi. Tap a card for full paint matches. Draw random for your next project.</p>
     <div class="primary-note"><strong>Pro Acryl</strong> is the primary paint match on every swatch.</div>
   </header>
 
   <div class="toolbar">
     <button class="primary" id="btn-draw" type="button">Draw random</button>
     <button id="btn-reset" type="button">Show all</button>
-    <button id="btn-flip-all" type="button">Flip all</button>
+    <button id="btn-flip-all" type="button">Open first paints</button>
     <button id="btn-print" type="button">Print</button>
     <div class="filter-group" role="group" aria-label="Theme filter">
       <button type="button" data-filter="all" class="active">All</button>
@@ -497,9 +610,23 @@
 
   <div class="grid" id="grid"></div>
 
+  <div class="detail-backdrop" id="detail-backdrop" hidden>
+    <div class="detail-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div class="detail-top">
+        <div>
+          <h2 id="detail-title">Card</h2>
+          <div class="meta" id="detail-meta"></div>
+        </div>
+        <button type="button" class="detail-close" id="detail-close">Close</button>
+      </div>
+      <div class="detail-body" id="detail-body"></div>
+    </div>
+  </div>
+
+
   <footer>
     <p><strong>Paint matches are approximate references</strong> for personal use — not official Ninjon content and not affiliated with Monument Hobbies (Pro Acryl), The Army Painter, AK Interactive, Privateer Press (P3), or Two Thin Coats. Verify colors against your own pots under your lighting. Secondary brands (AK / TAP / P3 / TTC) are optional backups; Pro Acryl is prioritized for accuracy.</p>
-    <p>Use: shuffle mentally or hit <em>Draw random</em> · flip for hex + paint table · print 2 cards per letter page (poker-ish ~2.5×3.5").</p>
+    <p>Use: shuffle mentally or hit <em>Draw random</em> · tap a card for hex + paint table · print 2 cards per letter page (poker-ish ~2.5×3.5").</p>
   </footer>
 </div>
 
@@ -18805,6 +18932,70 @@ function roleOrder(role) {
   return o[role] ?? 9;
 }
 
+function openDetail(card) {
+  const backdrop = document.getElementById('detail-backdrop');
+  const sheet = document.getElementById('detail-sheet');
+  const body = document.getElementById('detail-body');
+  document.getElementById('detail-title').textContent = card.title;
+  document.getElementById('detail-meta').textContent = `${card.id} · ${card.theme === 'fantasy' ? 'Fantasy' : 'Sci-Fi'}`;
+  sheet.className = 'detail-sheet ' + (card.theme === 'fantasy' ? 'fantasy' : 'scifi');
+
+  const colors = [...card.colors].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
+  const rows = colors.map(c => {
+    const p = c.paints || {};
+    const pro = p.PRO || {};
+    const code = pro.code ? `<span class="pro-code">${pro.code}</span>` : '';
+    return `<tr>
+      <td><span class="sw" style="background:${c.hex}"></span><span class="hex">${c.hex}</span><div class="role">${c.role} · ${c.name}</div></td>
+      <td class="pro-col"><span class="pro-name">${pro.name || '—'}</span>${code}</td>
+      <td class="sec-paint">${(p.AK && p.AK.name) || '—'}</td>
+      <td class="sec-paint">${(p.TAP && p.TAP.name) || '—'}</td>
+      <td class="sec-paint">${(p.P3 && p.P3.name) || '—'}</td>
+      <td class="sec-paint">${(p.TTC && p.TTC.name) || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const art = card.art_front
+    ? `<img class="detail-art" src="${card.art_front}" alt="${card.title}" />`
+    : '';
+  const challenge = card.challenge_hint
+    ? `<div class="detail-challenge"><strong>Challenge:</strong> ${card.challenge_hint}</div>`
+    : '';
+
+  body.innerHTML = `
+    ${art}
+    <p class="detail-mood">${card.mood || ''}</p>
+    <div class="detail-table-wrap">
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>Swatch</th>
+            <th class="pro-col">PRO ★</th>
+            <th class="sec-paint">AK</th>
+            <th class="sec-paint">TAP</th>
+            <th class="sec-paint">P3</th>
+            <th class="sec-paint">TTC</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${challenge}
+  `;
+
+  backdrop.hidden = false;
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('detail-close').focus();
+}
+
+function closeDetail() {
+  const backdrop = document.getElementById('detail-backdrop');
+  backdrop.classList.remove('open');
+  backdrop.hidden = true;
+  document.body.style.overflow = '';
+}
+
 function buildCard(card) {
   const colors = [...card.colors].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
   const slot = document.createElement('div');
@@ -18818,29 +19009,11 @@ function buildCard(card) {
   el.dataset.id = card.id;
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
-  el.setAttribute('aria-label', `${card.title} — click to flip`);
+  el.setAttribute('aria-label', `${card.title} — open paint matches`);
 
   const blocks = colors.map(c => `<span style="background:${c.hex}"></span>`).join('');
   const swatches = colors.map(c => `<i style="background:${c.hex}" title="${c.name}"></i>`).join('');
   const gradient = `linear-gradient(135deg, ${colors[0].hex} 0%, ${colors[1].hex} 35%, ${colors[2].hex} 65%, ${colors[3].hex} 100%)`;
-
-  const rows = colors.map(c => {
-    const p = c.paints;
-    const pro = p.PRO || {};
-    const code = pro.code ? `<span class="pro-code">${pro.code}</span>` : '';
-    return `<tr>
-      <td><span class="sw" style="background:${c.hex}"></span><span class="hex">${c.hex}</span><div class="role">${c.role} · ${c.name}</div></td>
-      <td class="pro-col"><span class="pro-name">${pro.name || '—'}</span>${code}</td>
-      <td class="sec-paint">${(p.AK && p.AK.name) || '—'}</td>
-      <td class="sec-paint">${(p.TAP && p.TAP.name) || '—'}</td>
-      <td class="sec-paint">${(p.P3 && p.P3.name) || '—'}</td>
-      <td class="sec-paint">${(p.TTC && p.TTC.name) || '—'}</td>
-    </tr>`;
-  }).join('');
-
-  const challenge = card.challenge_hint
-    ? `<div class="challenge"><strong>Challenge:</strong> ${card.challenge_hint}</div>`
-    : '';
 
   el.innerHTML = `
     <div class="face front">
@@ -18856,38 +19029,15 @@ function buildCard(card) {
         <h2 class="title">${card.title}</h2>
         <p class="mood">${card.mood}</p>
         <div class="swatches">${swatches}</div>
-        <div class="flip-hint">tap to show paints · tap again for art</div>
-      </div>
-    </div>
-    <div class="face back">
-      <span class="theme-chip">${card.theme === 'fantasy' ? 'Fantasy' : 'Sci-Fi'}</span>
-      <div class="back-inner">
-        <div class="back-head">
-          <h3>${card.title}</h3>
-          <span class="id">${card.id}</span>
-        </div>
-        <table class="paint-table">
-          <thead>
-            <tr>
-              <th>Swatch</th>
-              <th class="pro-col">PRO ★</th>
-              <th class="sec-paint">AK</th>
-              <th class="sec-paint">TAP</th>
-              <th class="sec-paint">P3</th>
-              <th class="sec-paint">TTC</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        ${challenge}
+        <div class="flip-hint">tap for full paint matches</div>
       </div>
     </div>
   `;
 
-  const flip = () => el.classList.toggle('flipped');
-  el.addEventListener('click', flip);
+  const open = () => openDetail(card);
+  el.addEventListener('click', open);
   el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
   });
 
   slot.appendChild(el);
@@ -18926,7 +19076,7 @@ document.getElementById('btn-draw').addEventListener('click', () => {
   drawnId = pick.id;
   const banner = document.getElementById('drawn-banner');
   banner.classList.add('visible');
-  banner.innerHTML = `Drawn: <strong>${pick.title}</strong> <span style="color:var(--muted)">(${pick.id} · ${pick.theme})</span> — flip for Pro Acryl matches`;
+  banner.innerHTML = `Drawn: <strong>${pick.title}</strong> <span style="color:var(--muted)">(${pick.id} · ${pick.theme})</span> — tap card for Pro Acryl matches`;
   render();
   const card = document.querySelector('.card');
   if (card) {
@@ -18942,7 +19092,16 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 });
 
 document.getElementById('btn-flip-all').addEventListener('click', () => {
-  document.querySelectorAll('.card').forEach(c => c.classList.toggle('flipped'));
+  const list = allCards.filter(c => filter === 'all' || c.theme === filter);
+  if (!list.length) return;
+  openDetail(list[0]);
+});
+document.getElementById('detail-close').addEventListener('click', closeDetail);
+document.getElementById('detail-backdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'detail-backdrop') closeDetail();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
 });
 
 document.getElementById('btn-print').addEventListener('click', () => window.print());
