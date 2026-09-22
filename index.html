@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Deck of Many Colors — Fan Reference (Christopher)</title>
+<title>Deck of Many Colors — Fan Reference (Christopher) v5</title>
 <style>
   :root {
     --bg: #0c0e12;
@@ -486,7 +486,7 @@
     background: rgba(4, 6, 12, .78);
   }
   .detail-backdrop.open {
-    display: flex;
+    display: flex !important;
   }
   @media (min-width: 800px) {
     .detail-backdrop {
@@ -497,6 +497,8 @@
   .detail-sheet {
     width: 100%;
     max-width: 720px;
+    height: 92vh;
+    max-height: 92vh;
     height: min(92dvh, 920px);
     max-height: 92dvh;
     overflow: hidden;
@@ -510,8 +512,10 @@
   }
   @media (min-width: 800px) {
     .detail-sheet {
-      height: min(88vh, 860px);
+      height: 88vh;
       max-height: 88vh;
+      height: min(88dvh, 860px);
+      max-height: 88dvh;
       border-radius: 16px;
       box-shadow: 0 24px 80px rgba(0,0,0,.55);
     }
@@ -637,7 +641,22 @@
     font-size: .95rem;
     line-height: 1.45;
   }
-  body.detail-open { overflow: hidden; touch-action: none; }
+  body.detail-open { overflow: hidden; }
+  .paints-btn {
+    margin-top: .35rem;
+    width: 100%;
+    border: 1px solid #5b21b6;
+    background: linear-gradient(135deg, #5b21b6, #7c3aed);
+    color: #fff;
+    border-radius: 10px;
+    padding: .7rem .8rem;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 650;
+    cursor: pointer;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
 </style>
 </head>
 <body>
@@ -665,7 +684,7 @@
 
   <div class="grid" id="grid"></div>
 
-  <div class="detail-backdrop" id="detail-backdrop" hidden>
+  <div class="detail-backdrop" id="detail-backdrop" aria-hidden="true">
     <div class="detail-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
       <div class="detail-top">
         <div>
@@ -18988,67 +19007,68 @@ function roleOrder(role) {
 }
 
 function openDetail(card) {
-  const backdrop = document.getElementById('detail-backdrop');
-  const sheet = document.getElementById('detail-sheet');
-  const body = document.getElementById('detail-body');
-  document.getElementById('detail-title').textContent = card.title;
-  document.getElementById('detail-meta').textContent = `${card.id} · ${card.theme === 'fantasy' ? 'Fantasy' : 'Sci-Fi'}`;
-  sheet.className = 'detail-sheet ' + (card.theme === 'fantasy' ? 'fantasy' : 'scifi');
+  try {
+    const backdrop = document.getElementById('detail-backdrop');
+    const sheet = document.getElementById('detail-sheet');
+    const body = document.getElementById('detail-body');
+    if (!backdrop || !sheet || !body) throw new Error('detail panel missing');
 
-  const colors = [...card.colors].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
-  const cards = colors.map(c => {
-    const p = c.paints || {};
-    const pro = p.PRO || {};
-    const code = pro.code ? ` · ${pro.code}` : '';
-    const secs = [
-      p.AK && p.AK.name && p.AK.name !== '—' ? `AK: ${p.AK.name}` : '',
-      p.TAP && p.TAP.name && p.TAP.name !== '—' ? `TAP: ${p.TAP.name}` : '',
-      p.P3 && p.P3.name && p.P3.name !== '—' ? `P3: ${p.P3.name}` : '',
-      p.TTC && p.TTC.name && p.TTC.name !== '—' ? `TTC: ${p.TTC.name}` : '',
-    ].filter(Boolean).join(' · ');
-    return `<article class="swatch-card">
+    document.getElementById('detail-title').textContent = card.title || card.id;
+    document.getElementById('detail-meta').textContent = `${card.id} · ${card.theme === 'fantasy' ? 'Fantasy' : 'Sci-Fi'}`;
+    sheet.className = 'detail-sheet ' + (card.theme === 'fantasy' ? 'fantasy' : 'scifi');
+
+    const colors = [...(card.colors || [])].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
+    const cardsHtml = colors.map(c => {
+      const p = c.paints || {};
+      const pro = p.PRO || {};
+      const code = pro.code ? ` · ${pro.code}` : '';
+      const secs = [
+        p.AK && p.AK.name && p.AK.name !== '-' && p.AK.name !== '—' ? `AK: ${p.AK.name}` : '',
+        p.TAP && p.TAP.name && p.TAP.name !== '-' && p.TAP.name !== '—' ? `TAP: ${p.TAP.name}` : '',
+        p.P3 && p.P3.name && p.P3.name !== '-' && p.P3.name !== '—' ? `P3: ${p.P3.name}` : '',
+        p.TTC && p.TTC.name && p.TTC.name !== '-' && p.TTC.name !== '—' ? `TTC: ${p.TTC.name}` : '',
+      ].filter(Boolean).join(' · ');
+      return `<article class="swatch-card">
       <div class="swatch-chip" style="background:${c.hex}"></div>
       <div>
         <div class="hex">${c.hex}</div>
         <div class="role">${c.role}</div>
         <div class="name">${c.name}</div>
-        <div class="pro-line"><strong>PRO</strong> ${pro.name || '—'}${code}</div>
+        <div class="pro-line"><strong>PRO</strong> ${pro.name || '-'}${code}</div>
         ${secs ? `<div class="sec-line">${secs}</div>` : ''}
       </div>
     </article>`;
-  }).join('');
+    }).join('');
 
-  const art = card.art_front
-    ? `<img class="detail-art" src="${card.art_front}" alt="${card.title}" />`
-    : '';
-  const challenge = card.challenge_hint
-    ? `<div class="detail-challenge"><strong>Challenge:</strong> ${card.challenge_hint}</div>`
-    : '';
+    const art = card.art_front
+      ? `<img class="detail-art" src="${card.art_front}" alt="${card.title}" />`
+      : '';
+    const challenge = card.challenge_hint
+      ? `<div class="detail-challenge"><strong>Challenge:</strong> ${card.challenge_hint}</div>`
+      : '';
 
-  body.innerHTML = `
-    ${art}
-    <p class="detail-mood">${card.mood || ''}</p>
-    <div class="swatch-list">${cards}</div>
-    ${challenge}
-  `;
+    body.innerHTML = `${art}<p class="detail-mood">${card.mood || ''}</p><div class="swatch-list">${cardsHtml}</div>${challenge}`;
+    body.scrollTop = 0;
 
-  backdrop.hidden = false;
-  backdrop.classList.add('open');
-  document.body.classList.add('detail-open');
-  body.scrollTop = 0;
-  document.getElementById('detail-close').focus();
+    backdrop.classList.add('open');
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('detail-open');
+  } catch (err) {
+    console.error(err);
+    alert('Could not open paints: ' + err.message);
+  }
 }
 
 function closeDetail() {
   const backdrop = document.getElementById('detail-backdrop');
+  if (!backdrop) return;
   backdrop.classList.remove('open');
-  backdrop.hidden = true;
+  backdrop.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('detail-open');
-  document.body.style.overflow = '';
 }
 
 function buildCard(card) {
-  const colors = [...card.colors].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
+  const colors = [...(card.colors || [])].sort((a, b) => roleOrder(a.role) - roleOrder(b.role));
   const slot = document.createElement('div');
   slot.className = 'card-slot';
   slot.dataset.id = card.id;
@@ -19058,13 +19078,14 @@ function buildCard(card) {
   el.className = 'card';
   el.dataset.theme = card.theme;
   el.dataset.id = card.id;
-  el.tabIndex = 0;
-  el.setAttribute('role', 'button');
-  el.setAttribute('aria-label', `${card.title} — open paint matches`);
 
   const blocks = colors.map(c => `<span style="background:${c.hex}"></span>`).join('');
   const swatches = colors.map(c => `<i style="background:${c.hex}" title="${c.name}"></i>`).join('');
-  const gradient = `linear-gradient(135deg, ${colors[0].hex} 0%, ${colors[1].hex} 35%, ${colors[2].hex} 65%, ${colors[3].hex} 100%)`;
+  const c0 = colors[0] ? colors[0].hex : '#111';
+  const c1 = colors[1] ? colors[1].hex : c0;
+  const c2 = colors[2] ? colors[2].hex : c1;
+  const c3 = colors[3] ? colors[3].hex : c2;
+  const gradient = `linear-gradient(135deg, ${c0} 0%, ${c1} 35%, ${c2} 65%, ${c3} 100%)`;
 
   el.innerHTML = `
     <div class="face front">
@@ -19073,23 +19094,17 @@ function buildCard(card) {
       <div class="art ${card.art_front ? 'has-illust' : ''}">
         <div class="art-gradient" style="background:${gradient}"></div>
         <div class="art-blocks">${blocks}</div>
-        ${card.art_front ? `<img class="art-illust" src="${card.art_front}" alt="${card.title}" />` : ''}
+        ${card.art_front ? `<img class="art-illust" src="${card.art_front}" alt="" />` : ''}
         <div class="art-overlay"></div>
       </div>
       <div class="front-body">
         <h2 class="title">${card.title}</h2>
-        <p class="mood">${card.mood}</p>
+        <p class="mood">${card.mood || ''}</p>
         <div class="swatches">${swatches}</div>
-        <div class="flip-hint">tap for full paint matches</div>
+        <button type="button" class="paints-btn" data-open-paints="${card.id}">Show paints</button>
       </div>
     </div>
   `;
-
-  const open = () => openDetail(card);
-  el.addEventListener('click', open);
-  el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
-  });
 
   slot.appendChild(el);
   return slot;
@@ -19147,12 +19162,25 @@ document.getElementById('btn-flip-all').addEventListener('click', () => {
   if (!list.length) return;
   openDetail(list[0]);
 });
-document.getElementById('detail-close').addEventListener('click', closeDetail);
+document.getElementById('detail-close').addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  closeDetail();
+});
 document.getElementById('detail-backdrop').addEventListener('click', (e) => {
   if (e.target.id === 'detail-backdrop') closeDetail();
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeDetail();
+});
+document.getElementById('grid').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-open-paints]');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const id = btn.getAttribute('data-open-paints');
+  const card = allCards.find(c => c.id === id);
+  if (card) openDetail(card);
 });
 
 document.getElementById('btn-print').addEventListener('click', () => window.print());
