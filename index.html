@@ -135,6 +135,10 @@
   .card-slot {
     perspective: 1200px;
     height: 420px;
+    transition: height .35s ease;
+  }
+  .card-slot:has(.card.flipped) {
+    height: min(780px, 90vh);
   }
   .card {
     position: relative;
@@ -294,7 +298,10 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .back-head {
     display: flex;
@@ -315,8 +322,8 @@
   .paint-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .68rem;
-    flex: 1;
+    font-size: .66rem;
+    flex: 0 0 auto;
   }
   .paint-table th {
     text-align: left;
@@ -454,6 +461,12 @@
 
   @media (max-width: 560px) {
     .card-slot { height: 400px; }
+  }
+
+  @media (max-width: 700px) {
+    .card-slot:has(.card.flipped) { height: min(860px, 92vh); }
+    .paint-table th.sec-paint,
+    .paint-table td.sec-paint { display: none; }
   }
 </style>
 </head>
