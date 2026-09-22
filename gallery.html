@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deck of Many Colors — Gallery</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c1017;
+      --panel: #141b25;
+      --panel-raised: #1a2431;
+      --line: #2a394a;
+      --text: #edf2f7;
+      --muted: #9aaabd;
+      --gold: #e7b85c;
+      --gold-soft: #8b6b2d;
+      --cyan: #55d7e8;
+      --cyan-soft: #236d7a;
+      --shadow: 0 18px 42px rgba(0, 0, 0, .28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -10%, #1b2939 0, var(--bg) 45rem);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .wrap { width: min(1500px, calc(100% - 2rem)); margin: 0 auto; }
+    header { padding: 3rem 0 1.5rem; }
+    .eyebrow { color: var(--gold); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: .25rem 0 .45rem; font: 700 clamp(2rem, 4vw, 3.35rem)/1.05 Georgia, serif; letter-spacing: -.025em; }
+    .intro { max-width: 48rem; margin: 0; color: var(--muted); font-size: 1rem; }
+    .topline { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+    .back-link { color: var(--cyan); text-decoration: none; white-space: nowrap; }
+    .back-link:hover { text-decoration: underline; }
+    .controls {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .8rem;
+      padding: 1rem; margin: 1rem 0 1.5rem;
+      background: rgba(20, 27, 37, .86); border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: var(--shadow); position: sticky; top: .75rem; z-index: 2;
+      backdrop-filter: blur(12px);
+    }
+    .filters { display: flex; gap: .4rem; }
+    button, input { font: inherit; }
+    .filter {
+      border: 1px solid var(--line); border-radius: 999px; padding: .48rem .9rem;
+      color: var(--muted); background: #111821; cursor: pointer;
+    }
+    .filter:hover, .filter.active { border-color: var(--gold); color: #fff; background: #302718; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .search { flex: 1 1 14rem; min-width: 12rem; position: relative; }
+    .search input {
+      width: 100%; border: 1px solid var(--line); border-radius: 999px; padding: .55rem 1rem;
+      background: #0e151e; color: var(--text); outline: none;
+    }
+    .search input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(85, 215, 232, .14); }
+    .count { color: var(--muted); font-size: .9rem; margin-left: auto; white-space: nowrap; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 32rem), 1fr)); gap: 1.25rem; padding-bottom: 3rem; }
+    .card {
+      min-width: 0; overflow: hidden; background: linear-gradient(145deg, #18212c, var(--panel));
+      border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+    }
+    .card[data-theme="fantasy"] { border-top: 3px solid var(--gold-soft); }
+    .card[data-theme="scifi"] { border-top: 3px solid var(--cyan-soft); }
+    .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding: 1rem 1rem .65rem; }
+    .card-title { margin: 0; font: 700 1.35rem/1.1 Georgia, serif; }
+    .card-id { color: var(--gold); font: 700 .8rem/1 monospace; letter-spacing: .08em; }
+    .theme { color: var(--muted); font-size: .73rem; letter-spacing: .12em; text-transform: uppercase; }
+    .image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; padding: 0 .75rem; }
+    .image-wrap { min-width: 0; }
+    .image-button { display: block; width: 100%; padding: 0; border: 1px solid #314153; border-radius: 9px; overflow: hidden; background: #0a0e13; cursor: zoom-in; }
+    .image-button:hover { border-color: var(--cyan); }
+    .image-button img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; }
+    .image-label { display: block; padding: .35rem .15rem .1rem; color: var(--muted); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
+    .mood { margin: .8rem 1rem 1rem; color: #c2cedb; font-size: .91rem; }
+    .empty { grid-column: 1/-1; padding: 3rem 1rem; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
+    dialog { width: min(94vw, 1000px); max-height: 94vh; padding: 0; border: 1px solid #53677b; border-radius: 12px; background: #090d13; box-shadow: 0 24px 80px #000; }
+    dialog::backdrop { background: rgba(0, 0, 0, .82); backdrop-filter: blur(4px); }
+    .lightbox-image { display: block; max-width: 100%; max-height: 88vh; margin: auto; object-fit: contain; }
+    .close { position: absolute; top: .5rem; right: .65rem; width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .65); font-size: 1.4rem; cursor: pointer; }
+    .close:hover { background: var(--cyan-soft); }
+    @media (max-width: 650px) {
+      .wrap { width: min(100% - 1rem, 1500px); }
+      header { padding-top: 2rem; }
+      .topline { align-items: start; flex-direction: column; }
+      .controls { top: .35rem; }
+      .count { width: 100%; margin-left: 0; }
+      .gallery { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 390px) { .image-pair { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Christopher's reference deck · 104 cards</div>
+          <h1>Deck of Many Colors — Gallery</h1>
+          <p class="intro">Browse every finished art front alongside its matching layout preview. Filter by theme or search by card title and ID.</p>
+        </div>
+        <a class="back-link" href="./index.html">← Open deck viewer</a>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Gallery controls">
+      <div class="filters" role="group" aria-label="Filter by theme">
+        <button class="filter active" type="button" data-filter="all">All</button>
+        <button class="filter" type="button" data-filter="fantasy">Fantasy</button>
+        <button class="filter" type="button" data-filter="scifi">Sci-Fi</button>
+      </div>
+      <label class="search"><span class="sr-only">Search cards</span><input id="search" type="search" placeholder="Search title or ID…" autocomplete="off"></label>
+      <div class="count" id="count" aria-live="polite">Loading cards…</div>
+    </section>
+
+    <section class="gallery" id="gallery" aria-live="polite"></section>
+  </main>
+
+  <dialog id="lightbox" aria-label="Full-size card image">
+    <button class="close" id="close-lightbox" type="button" aria-label="Close image">×</button>
+    <img class="lightbox-image" id="lightbox-image" alt="">
+  </dialog>
+
+  <script>
+    // Kept intentionally small: this fallback makes the gallery usable when opened as file://.
+    const FALLBACK_CARDS = [{"id":"F01","theme":"fantasy","title":"Ember Knight","mood":"Charred plate catching the last heat of a battlefield forge.","art_front":"F01-Ember-Knight-front.jpg"},{"id":"F02","theme":"fantasy","title":"Verdant Witch","mood":"Moss cloak, poison glow, bark brown.","art_front":"F02-Verdant-Witch-front.jpg"},{"id":"F03","theme":"fantasy","title":"Frost Lich","mood":"Bone-cold majesty under a winter moon.","art_front":"F03-Frost-Lich-front.jpg"},{"id":"F04","theme":"fantasy","title":"Royal Paladin","mood":"Heraldic blue, crimson cloak, gold as trim.","art_front":"F04-Royal-Paladin-front.jpg"},{"id":"F05","theme":"fantasy","title":"Shadow Ranger","mood":"Dusk greens and leather, broken by one loud lantern.","art_front":"F05-Shadow-Ranger-front.jpg"},{"id":"F06","theme":"fantasy","title":"Crystal Dragon","mood":"Amethyst scales flashing cyan fire along the spine.","art_front":"F06-Crystal-Dragon-front.jpg"},{"id":"S01","theme":"scifi","title":"Neon Wraith","mood":"Rain-slick chrome under magenta and cyan neon.","art_front":"S01-Neon-Wraith-front.jpg"},{"id":"S02","theme":"scifi","title":"Breach Hazard","mood":"Olive plate, cold steel, and caution yellow under dead stars.","art_front":"S02-Breach-Hazard-front.jpg"},{"id":"S03","theme":"scifi","title":"Plasma Mechanist","mood":"Cool reactor blues interrupted by plasma-orange arcs.","art_front":"S03-Plasma-Mechanist-front.jpg"},{"id":"S04","theme":"scifi","title":"Rust Colony","mood":"Oxidized hulls, warning paint, and dust-bowl grit.","art_front":"S04-Rust-Colony-front.jpg"},{"id":"S05","theme":"scifi","title":"Scarlet Wing","mood":"Crisp navy and white, one scarlet stripe that owns the eye.","art_front":"S05-Scarlet-Wing-front.jpg"},{"id":"S06","theme":"scifi","title":"Alien Hive","mood":"Organic chitin in sickly greens with venom-purple veins.","art_front":"S06-Alien-Hive-front.jpg"},{"id":"F07","theme":"fantasy","title":"Storm Cleric","mood":"Storm-blue plate and a white bolt that cuts the rain.","art_front":"F07-Storm-Cleric-front.jpg"},{"id":"F08","theme":"fantasy","title":"Blood Reliquary","mood":"Black robes, arterial red, bone that stays cold.","art_front":"F08-Blood-Reliquary-front.jpg"},{"id":"S07","theme":"scifi","title":"Solar Marine","mood":"Cream plate under a hard sun; orange marks small and loud.","art_front":"S07-Solar-Marine-front.jpg"},{"id":"S08","theme":"scifi","title":"Ice Drone","mood":"Cold steel, glacier cyan, one white eye.","art_front":"S08-Ice-Drone-front.jpg"},{"id":"F09","theme":"fantasy","title":"Gravebloom Ghoul","mood":"Rotten moss and bone, one sickly fungus bloom.","art_front":"F09-Gravebloom-Ghoul-front.jpg"},{"id":"F10","theme":"fantasy","title":"Brass Djinn","mood":"Saffron wraps, hammered brass, one turquoise seal.","art_front":"F10-Brass-Djinn-front.jpg"},{"id":"F11","theme":"fantasy","title":"Bog Stalker","mood":"Murky olive hide, one venom-yellow iris stripe.","art_front":"F11-Bog-Stalker-front.jpg"},{"id":"F12","theme":"fantasy","title":"Ashen Succubus","mood":"Ash flesh, rose wing membrane, ember cracks.","art_front":"F12-Ashen-Succubus-front.jpg"},{"id":"F13","theme":"fantasy","title":"Starleaf Archer","mood":"Teal leathers under a pale starstring glow.","art_front":"F13-Starleaf-Archer-front.jpg"},{"id":"F14","theme":"fantasy","title":"Cave Wyrm","mood":"Granite scales, amber gutfire between belly plates.","art_front":"F14-Cave-Wyrm-front.jpg"},{"id":"F15","theme":"fantasy","title":"Runescribe Adept","mood":"Slate robes, one loud cobalt rune on the page.","art_front":"F15-Runescribe-Adept-front.jpg"},{"id":"F16","theme":"fantasy","title":"Dawn Herald","mood":"Cream vestments cut by a sunrise sash.","art_front":"F16-Dawn-Herald-front.jpg"},{"id":"F17","theme":"fantasy","title":"Jade Oathblade","mood":"Near-black lacquer, jade glow on the blade edge.","art_front":"F17-Jade-Oathblade-front.jpg"},{"id":"F18","theme":"fantasy","title":"Tide Caller","mood":"Kelp greens, foam white, coral-orange staff tip.","art_front":"F18-Tide-Caller-front.jpg"},{"id":"F19","theme":"fantasy","title":"Mycelium Druid","mood":"Bark-brown robes, purple caps, soft lilac spores.","art_front":"F19-Mycelium-Druid-front.jpg"},{"id":"F20","theme":"fantasy","title":"Gilded Gryphon","mood":"Tawny plumes, cream crest, loud sapphire eye rings.","art_front":"F20-Gilded-Gryphon-front.jpg"},{"id":"S09","theme":"scifi","title":"Titan Walkframe","mood":"Charcoal plates, hazard-orange actuator seals.","art_front":"S09-Titan-Walkframe-front.jpg"},{"id":"S10","theme":"scifi","title":"Void Corsair","mood":"Matte black plate, violet sail-field, one white nav lamp.","art_front":"S10-Void-Corsair-front.jpg"},{"id":"S11","theme":"scifi","title":"Circuit Ronin","mood":"Black coat, cool chrome, electric lime HUD slash.","art_front":"S11-Circuit-Ronin-front.jpg"},{"id":"S12","theme":"scifi","title":"Ash Legion Trooper","mood":"Scorched flak grey, one dried-blood helm stripe.","art_front":"S12-Ash-Legion-Trooper-front.jpg"},{"id":"S13","theme":"scifi","title":"Synapse Broodling","mood":"Pale chitin, teal synaptic nodes in the pits.","art_front":"S13-Synapse-Broodling-front.jpg"},{"id":"S14","theme":"scifi","title":"Foundry Golem","mood":"Slag plates, molten-copper vents, pale dust.","art_front":"S14-Foundry-Golem-front.jpg"},{"id":"S15","theme":"scifi","title":"Eclipse Interdictor","mood":"Indigo hull, one hard magenta boarding beacon.","art_front":"S15-Eclipse-Interdictor-front.jpg"},{"id":"S16","theme":"scifi","title":"Bio-Warden","mood":"Living teal plate, one amber containment lamp.","art_front":"S16-Bio-Warden-front.jpg"},{"id":"S17","theme":"scifi","title":"Siege Crawler","mood":"Olive skirts, caution-yellow tread guards, soot recesses.","art_front":"S17-Siege-Crawler-front.jpg"},{"id":"S18","theme":"scifi","title":"Orbital Courier","mood":"White hull, navy band, electric cyan thruster wash.","art_front":"S18-Orbital-Courier-front.jpg"},{"id":"S19","theme":"scifi","title":"Wasteland Commissar","mood":"Dust-brown coat, black helm, one scarlet chest badge.","art_front":"S19-Wasteland-Commissar-front.jpg"},{"id":"S20","theme":"scifi","title":"Quantum Ghost","mood":"Near-invisible grey, hard violet phase fringe.","art_front":"S20-Quantum-Ghost-front.jpg"},{"id":"F21","theme":"fantasy","title":"Oathplate Crusader","mood":"Cobalt plate, cream tabard, gold as trim only.","art_front":"F21-Oathplate-Crusader-front.jpg"},{"id":"F22","theme":"fantasy","title":"Fellbrand Reaver","mood":"Char-black plate, wet crimson sash and blade.","art_front":"F22-Fellbrand-Reaver-front.jpg"},{"id":"F23","theme":"fantasy","title":"Mudtrench Pike","mood":"Mud-khaki coat, one blood-red collar flash.","art_front":"F23-Mudtrench-Pike-front.jpg"},{"id":"F24","theme":"fantasy","title":"Cinder Automata","mood":"Soot chassis, furnace-orange joints, quieter brass.","art_front":"F24-Cinder-Automata-front.jpg"},{"id":"F25","theme":"fantasy","title":"Scrapfang Raider","mood":"Dark scrap-green hide, rust plate, amber fang-glyphs.","art_front":"F25-Scrapfang-Raider-front.jpg"},{"id":"F26","theme":"fantasy","title":"Voidjewel Corsair","mood":"Amethyst armor, turquoise sailsilk, bone-pale flesh.","art_front":"F26-Voidjewel-Corsair-front.jpg"},{"id":"F27","theme":"fantasy","title":"Livingalloy Wight","mood":"Verdigris living metal, emerald core-glow.","art_front":"F27-Livingalloy-Wight-front.jpg"},{"id":"F28","theme":"fantasy","title":"Alabaster Zealot","mood":"Bone plate, jet seals, scarlet scripture ribbons.","art_front":"F28-Alabaster-Zealot-front.jpg"},{"id":"S21","theme":"scifi","title":"Aegis Cohort","mood":"Cohort-blue ceramic, cream pauldrons, rank gold trim.","art_front":"S21-Aegis-Cohort-front.jpg"},{"id":"S22","theme":"scifi","title":"Apostate Plate","mood":"Void-black plate, crimson vents and eyes only.","art_front":"S22-Apostate-Plate-front.jpg"},{"id":"S23","theme":"scifi","title":"Sporecarapace Brood","mood":"Bone-tan carapace, acid-green spore vents, bruise recesses.","art_front":"S23-Sporecarapace-Brood-front.jpg"},{"id":"S24","theme":"scifi","title":"Cogthrall Automata","mood":"Crimson robes as mass, amber optic, brass chassis.","art_front":"S24-Cogthrall-Automata-front.jpg"},{"id":"S25","theme":"scifi","title":"Junkclan Bruiser","mood":"Sick green scrap, louder orange clan glyph, soot iron.","art_front":"S25-Junkclan-Bruiser-front.jpg"},{"id":"S26","theme":"scifi","title":"Prismsail Corsair","mood":"Magenta hull, cyan sail-fields, bone crest.","art_front":"S26-Prismsail-Corsair-front.jpg"},{"id":"S27","theme":"scifi","title":"Chronometal Revenant","mood":"Chrono teal metal, green lattice light.","art_front":"S27-Chronometal-Revenant-front.jpg"},{"id":"S28","theme":"scifi","title":"Sept Cadre Suit","mood":"Cadre white, crimson sept marks, matte black seals.","art_front":"S28-Sept-Cadre-Suit-front.jpg"},{"id":"F29","theme":"fantasy","title":"Skybolt Lancer","mood":"Storm-steel plate; one yellow bolt down the lance.","art_front":"F29-Skybolt-Lancer-front.jpg"},{"id":"F30","theme":"fantasy","title":"Scarab Dunerider","mood":"Sand carapace; one magenta scarab seal; quieter brass.","art_front":"F30-Scarab-Dunerider-front.jpg"},{"id":"F31","theme":"fantasy","title":"Roseglass Golem","mood":"Rose-quartz mass; indigo vein-light only.","art_front":"F31-Roseglass-Golem-front.jpg"},{"id":"F32","theme":"fantasy","title":"Bilemask Chirurgeon","mood":"Charcoal coat; deeper amber bile vial (#D97706).","art_front":"F32-Bilemask-Chirurgeon-front.jpg"},{"id":"F33","theme":"fantasy","title":"Pride Cavalier","mood":"Tawny plate; sky Pride Blue sash (#38BDF8).","art_front":"F33-Pride-Cavalier-front.jpg"},{"id":"F34","theme":"fantasy","title":"Magma Anvil","mood":"Basalt plate (#3F3A38); orchid magma cracks; quieter slag bronze.","art_front":"F34-Magma-Anvil-front.jpg"},{"id":"F35","theme":"fantasy","title":"Abyss Merrow","mood":"Navy scales; biolume cyan spear stripe; foam pale.","art_front":"F35-Abyss-Merrow-front.jpg"},{"id":"F36","theme":"fantasy","title":"Nightveil Blade","mood":"Veil grey (#3F3F46); kill cyan mark; edge steel; quiet blood strap.","art_front":"F36-Nightveil-Blade-front.jpg"},{"id":"S29","theme":"scifi","title":"Boarding Mako","mood":"Ocean ceramic; one amber teeth-stripe on the prow.","art_front":"S29-Boarding-Mako-front.jpg"},{"id":"S30","theme":"scifi","title":"Sandwalker Patrol","mood":"Desert flak; one rose hazard badge.","art_front":"S30-Sandwalker-Patrol-front.jpg"},{"id":"S31","theme":"scifi","title":"Cryoflot Destroyer","mood":"Flotilla navy hull; orange sun chevron (not gold).","art_front":"S31-Cryoflot-Destroyer-front.jpg"},{"id":"S32","theme":"scifi","title":"Helix Bioship","mood":"Bioviolet hull; aqua helix in the seams.","art_front":"S32-Helix-Bioship-front.jpg"},{"id":"S33","theme":"scifi","title":"Banner Knightframe","mood":"Storm chassis; orchid banner strip; quieter bronze.","art_front":"S33-Banner-Knightframe-front.jpg"},{"id":"S34","theme":"scifi","title":"Warrant Freebooter","mood":"Burgundy coat-armor; chartreuse warrant seal.","art_front":"S34-Warrant-Freebooter-front.jpg"},{"id":"S35","theme":"scifi","title":"Breach Demolisher","mood":"Siege grey; breech magenta (#F0ABFC); quieter brass.","art_front":"S35-Breach-Demolisher-front.jpg"},{"id":"S36","theme":"scifi","title":"Ghostwing Skimmer","mood":"Stealth slate (#374151); indigo wing-edge; quiet pit cyan.","art_front":"S36-Ghostwing-Skimmer-front.jpg"},{"id":"F37","theme":"fantasy","title":"Rime Giant","mood":"Ice-slate plate (#64748B); amber brow rune (#F59E0B).","art_front":"F37-Rime-Giant-front.jpg"},{"id":"F38","theme":"fantasy","title":"Mossback Troll","mood":"Moss hide; bloom magenta (#F0ABFC); root mud (#8B5E3C).","art_front":"F38-Mossback-Troll-front.jpg"},{"id":"F39","theme":"fantasy","title":"Parchment Magus","mood":"Scroll cream (#D4CFC4); emerald ink seal; quieter brass.","art_front":"F39-Parchment-Magus-front.jpg"},{"id":"F40","theme":"fantasy","title":"Coral Warden","mood":"Coral-pink plate; herald teal (#0F766E); shell grit.","art_front":"F40-Coral-Warden-front.jpg"},{"id":"F41","theme":"fantasy","title":"Copper Golem","mood":"Copper oxide mass; joint lime (#84CC16); quieter rivets.","art_front":"F41-Copper-Golem-front.jpg"},{"id":"F42","theme":"fantasy","title":"Ink Witch","mood":"Ink cloth (#3F3F46); sigil yellow (#EAB308) on the cuff.","art_front":"F42-Ink-Witch-front.jpg"},{"id":"F43","theme":"fantasy","title":"Bone Choir","mood":"Choir bone (#D4CFC4); hymn violet at the throat.","art_front":"F43-Bone-Choir-front.jpg"},{"id":"F44","theme":"fantasy","title":"Jade Monk","mood":"Jade robes; saffron sash knot (jade stays off the weapon).","art_front":"F44-Jade-Monk-front.jpg"},{"id":"S37","theme":"scifi","title":"Shaftbore Drill","mood":"Ore chassis; orchid hazard stripe.","art_front":"S37-Shaftbore-Drill-front.jpg"},{"id":"S38","theme":"scifi","title":"Mercy Ark","mood":"Clinic grey (#D1D5DB); med-green cross lamp.","art_front":"S38-Mercy-Ark-front.jpg"},{"id":"S39","theme":"scifi","title":"Parade Bastion","mood":"Parade ivory (#D4CFC4); ultramarine banner; quieter bronze.","art_front":"S39-Parade-Bastion-front.jpg"},{"id":"S40","theme":"scifi","title":"Void Monk","mood":"Habit grey (#3F3F46); coral prayer-node.","art_front":"S40-Void-Monk-front.jpg"},{"id":"S41","theme":"scifi","title":"Hullscrap Skiff","mood":"Skiff slate; olive prow glyph; rivet rust (#B45309).","art_front":"S41-Hullscrap-Skiff-front.jpg"},{"id":"S42","theme":"scifi","title":"Sunmembrane Runner","mood":"Solar canvas (#D4B483); deep-indigo boom stripe.","art_front":"S42-Sunmembrane-Runner-front.jpg"},{"id":"S43","theme":"scifi","title":"Signal Swarm","mood":"Swarm char (#3F3F46); amber signal eye.","art_front":"S43-Signal-Swarm-front.jpg"},{"id":"S44","theme":"scifi","title":"Trenchwalker","mood":"Trench flak; chevron crimson (#F87171).","art_front":"S44-Trenchwalker-front.jpg"},{"id":"F45","theme":"fantasy","title":"Glassheart Knight","mood":"Glass-steel plate; deep-ruby heart seal.","art_front":"F45-Glassheart-Knight-front.jpg"},{"id":"F46","theme":"fantasy","title":"Briar Oracle","mood":"Briar bark robes; mint oracle-bloom at the staff crown.","art_front":"F46-Briar-Oracle-front.jpg"},{"id":"F47","theme":"fantasy","title":"Saltcantor","mood":"Salt-blue scale vestments; soft-coral hymn ribbon at the collar.","art_front":"F47-Saltcantor-front.jpg"},{"id":"F48","theme":"fantasy","title":"Ashwind Lancer","mood":"Ash-grey cloak armor; peach wind-pennon on the lance tip.","art_front":"F48-Ashwind-Lancer-front.jpg"},{"id":"S45","theme":"scifi","title":"Nullfence Sentinel","mood":"Fence-slate chassis; violet null-node on the projector arm.","art_front":"S45-Nullfence-Sentinel-front.jpg"},{"id":"S46","theme":"scifi","title":"Choirship Cantor","mood":"Choir-bone ivory hull; sky-cyan cantor stripe on the spire.","art_front":"S46-Choirship-Cantor-front.jpg"},{"id":"S47","theme":"scifi","title":"Maglev Outrider","mood":"Maglev-char bike armor; ember fairing chevron.","art_front":"S47-Maglev-Outrider-front.jpg"},{"id":"S48","theme":"scifi","title":"Mycoweave Suit","mood":"Mycoweave bio-plate; soft-orchid spore vent on the shoulder.","art_front":"S48-Mycoweave-Suit-front.jpg"},{"id":"F49","theme":"fantasy","title":"Mirror Hierophant","mood":"Mirror-bone ivory plate; periwinkle hierophant seal on the mitre.","art_front":"F49-Mirror-Hierophant-front.jpg"},{"id":"F50","theme":"fantasy","title":"Thornmantle Knight","mood":"Deep thornmantle green plate; amber thorn-sigil on the pauldron.","art_front":"F50-Thornmantle-Knight-front.jpg"},{"id":"F51","theme":"fantasy","title":"Cinder Reliquarist","mood":"Cinder-grey robes; soft-ember glow in the held reliquary only.","art_front":"F51-Cinder-Reliquarist-front.jpg"},{"id":"F52","theme":"fantasy","title":"Moonveil Seer","mood":"Veil-slate navy robes; periwinkle lilac brow-sigil.","art_front":"F52-Moonveil-Seer-front.jpg"},{"id":"S49","theme":"scifi","title":"Glassrail Carrier","mood":"Glassrail steel hull; orchid-pink route stripe on the nose.","art_front":"S49-Glassrail-Carrier-front.jpg"},{"id":"S50","theme":"scifi","title":"Ironpsalm Dreadnought","mood":"Psalm-iron dread plate; hard gold hymn-bar on the sarcophagus face.","art_front":"S50-Ironpsalm-Dreadnought-front.jpg"},{"id":"S51","theme":"scifi","title":"Driftkite Scout","mood":"Drift-teal hull; chartreuse kite ribbon on the boom.","art_front":"S51-Driftkite-Scout-front.jpg"},{"id":"S52","theme":"scifi","title":"Ashline Trooper","mood":"Ashline flak beige; hard rank-scarlet chest stripe.","art_front":"S52-Ashline-Trooper-front.jpg"}];
+    let cards = [];
+    let activeFilter = 'all';
+    let searchTerm = '';
+
+    const gallery = document.querySelector('#gallery');
+    const count = document.querySelector('#count');
+    const lightbox = document.querySelector('#lightbox');
+    const lightboxImage = document.querySelector('#lightbox-image');
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'}[character]));
+    }
+
+    function filteredCards() {
+      return cards.filter(card => {
+        const matchesTheme = activeFilter === 'all' || card.theme === activeFilter;
+        const haystack = `${card.id} ${card.title}`.toLowerCase();
+        return matchesTheme && haystack.includes(searchTerm);
+      });
+    }
+
+    function render() {
+      const visible = filteredCards();
+      count.textContent = `${visible.length} card${visible.length === 1 ? '' : 's'} shown`;
+      if (!visible.length) {
+        gallery.innerHTML = '<div class="empty">No cards match that filter or search.</div>';
+        return;
+      }
+      gallery.innerHTML = visible.map(card => {
+        const themeName = card.theme === 'scifi' ? 'Sci-Fi' : 'Fantasy';
+        const front = `./${card.art_front}`;
+        const layout = `./${card.id}-layout.jpg`;
+        return `<article class="card" data-theme="${escapeHtml(card.theme)}">
+          <div class="card-head"><div><span class="theme">${themeName}</span><h2 class="card-title">${escapeHtml(card.title)}</h2></div><span class="card-id">${escapeHtml(card.id)}</span></div>
+          <div class="image-pair">
+            <div class="image-wrap"><button class="image-button" type="button" data-full="${escapeHtml(front)}" data-alt="${escapeHtml(card.id + ' — ' + card.title + ' art front')}"><img src="${escapeHtml(front)}" alt="${escapeHtml(card.id + ' — ' + card.title + ' art front')}" loading="lazy"></button><span class="image-label">Art front</span></div>
+            <div class="image-wrap"><button class="image-button" type="button" data-full="${escapeHtml(layout)}" data-alt="${escapeHtml(card.id + ' — ' + card.title + ' layout preview')}"><img src="${escapeHtml(layout)}" alt="${escapeHtml(card.id + ' — ' + card.title + ' layout preview')}" loading="lazy"></button><span class="image-label">Layout preview</span></div>
+          </div>
+          <p class="mood">${escapeHtml(card.mood)}</p>
+        </article>`;
+      }).join('');
+    }
+
+    document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
+      activeFilter = button.dataset.filter;
+      document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button));
+      render();
+    }));
+    document.querySelector('#search').addEventListener('input', event => {
+      searchTerm = event.target.value.trim().toLowerCase();
+      render();
+    });
+    gallery.addEventListener('click', event => {
+      const button = event.target.closest('.image-button');
+      if (!button) return;
+      lightboxImage.src = button.dataset.full;
+      lightboxImage.alt = button.dataset.alt;
+      lightbox.showModal();
+    });
+    document.querySelector('#close-lightbox').addEventListener('click', () => lightbox.close());
+    lightbox.addEventListener('click', event => { if (event.target === lightbox) lightbox.close(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && lightbox.open) lightbox.close(); });
+
+    fetch('./cards.json').then(response => {
+      if (!response.ok) throw new Error(`cards.json returned ${response.status}`);
+      return response.json();
+    }).then(data => {
+      if (!data || !Array.isArray(data.cards)) throw new Error('Invalid cards.json');
+      cards = data.cards;
+      render();
+    }).catch(() => {
+      cards = FALLBACK_CARDS;
+      render();
+    });
+  </script>
+</body>
+</html>
